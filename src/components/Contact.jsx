@@ -6,8 +6,8 @@ export default function Contact() {
 
       <div className="mt-8 rounded-2xl border border-white/10 bg-white/5 p-6">
         <div className="flex flex-col gap-3 text-sky-400">
-          <a className="hover:underline" href="mailto:khushiimpatell@gmail.com">
-            khushiimpatell@gmail.com
+          <a className="hover:underline" href="mailto:khushiixpatell@gmail.com">
+            khushiixpatell@gmail.com
           </a>
           <a className="hover:underline" href="https://github.com/khushiixpatell" target="_blank" rel="noopener">
             GitHub
