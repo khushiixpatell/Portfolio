@@ -36,12 +36,11 @@ export const projects = [
     categories: ["ai"],
     categoryLabel: "AI • Machine Learning",
 
-    type: "3-Person Team Project",
+    type: "Team Project",
     contribution: "Preprocessing, training, and evaluation",
 
     description:
-      "A grammatical error correction system exploring neural sequence models, attention, and generative AI approaches.",
-
+       "A grammatical error correction experiment comparing an attention-based Seq2Seq model, an ablation without attention, and Gemini LLM baselines.",
     technologies: [
       "Python",
       "PyTorch",

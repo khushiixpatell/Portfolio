@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 import Navbar from "./components/layout/Navbar";
+import Footer from "./components/layout/Footer";
 
 import Home from "./pages/Home";
 import BiteWise from "./pages/projects/BiteWise";
@@ -11,8 +12,8 @@ import ConnectFour from "./pages/projects/ConnectFour";
 
 export default function App() {
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-100">
-      <BrowserRouter>
+    <BrowserRouter>
+      <div className="min-h-screen bg-zinc-950 text-zinc-100">
         <Navbar />
 
         <Routes>
@@ -22,20 +23,30 @@ export default function App() {
             path="/projects/gdg-command-hub"
             element={<GDGCommandHub />}
           />
-          <Route path="/projects/gec-ai" element={<GECAI />} />
+
+          <Route
+            path="/projects/gec-ai"
+            element={<GECAI />}
+          />
+
           <Route
             path="/projects/connect-four-ai"
             element={<ConnectFour />}
           />
 
-          <Route path="/projects/bitewise" element={<BiteWise />} />
-          <Route path="/projects/zeuty" element={<Zeuty />} />
+          <Route
+            path="/projects/bitewise"
+            element={<BiteWise />}
+          />
+
+          <Route
+            path="/projects/zeuty"
+            element={<Zeuty />}
+          />
         </Routes>
 
-        <footer className="border-t border-white/10 py-10 text-center text-sm text-zinc-500">
-          © {new Date().getFullYear()} Khushi Patel. Built with React + Tailwind.
-        </footer>
-      </BrowserRouter>
-    </div>
+        <Footer />
+      </div>
+    </BrowserRouter>
   );
 }
