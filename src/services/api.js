@@ -24,3 +24,23 @@ export async function getProjectBySlug(slug) {
 
   return result.data;
 }
+export async function loginAdmin(email, password) {
+  const response = await fetch(`${API_URL}/auth/login`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      email,
+      password,
+    }),
+  });
+
+  const result = await response.json();
+
+  if (!response.ok) {
+    throw new Error(result.message || "Unable to log in");
+  }
+
+  return result;
+}

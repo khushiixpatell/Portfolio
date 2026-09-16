@@ -3,6 +3,10 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Navbar from "./components/layout/Navbar";
 import Footer from "./components/layout/Footer";
 
+import AdminLogin from "./pages/admin/AdminLogin";
+import AdminDashboard from "./pages/admin/AdminDashboard";
+import ProtectedRoute from "./components/admin/ProtectedRoute";
+
 import Home from "./pages/Home";
 import BiteWise from "./pages/projects/BiteWise";
 import Zeuty from "./pages/projects/Zeuty";
@@ -18,6 +22,19 @@ export default function App() {
 
         <Routes>
           <Route path="/" element={<Home />} />
+          <Route 
+            path="/khushi-admin/login"
+            element={<AdminLogin />}
+          />
+
+          <Route
+            path="/khushi-admin"
+            element={
+              <ProtectedRoute>
+                <AdminDashboard />
+              </ProtectedRoute>
+            }
+          />
 
           <Route
             path="/projects/gdg-command-hub"

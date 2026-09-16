@@ -1,4 +1,4 @@
-import { projectCategories } from "../../data/projects";
+import { projectCategories } from "../../data/projectCategories";
 
 export default function ProjectFilters({
   activeCategory,
