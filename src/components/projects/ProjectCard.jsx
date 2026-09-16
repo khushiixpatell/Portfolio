@@ -6,7 +6,7 @@ export default function ProjectCard({ project, index }) {
 
   return (
     <Link
-      to={project.route}
+      to={`/projects/${project.slug}`}
       className="
         group relative flex h-full flex-col
         rounded-3xl border border-white/10
@@ -47,7 +47,9 @@ export default function ProjectCard({ project, index }) {
 
         {project.contribution && (
           <div className="mt-3">
-            <p className="text-xs text-zinc-500">My focus</p>
+            <p className="text-xs text-zinc-500">
+              My focus
+            </p>
 
             <p className="mt-1 text-sm text-zinc-300">
               {project.contribution}

@@ -1,15 +1,38 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
-import { projects } from "../../data/projects";
+import { getProjects } from "../../services/api";
 import ProjectCard from "./ProjectCard";
 import ProjectFilters from "./ProjectFilters";
 
 export default function ProjectGrid() {
+  const [projects, setProjects] = useState([]);
   const [activeCategory, setActiveCategory] = useState("all");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    async function loadProjects() {
+      try {
+        setLoading(true);
+
+        const data = await getProjects();
+
+        setProjects(data);
+        setError(null);
+      } catch (err) {
+        console.error("Failed to load projects:", err);
+        setError("Unable to load projects right now.");
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadProjects();
+  }, []);
 
   const filteredProjects = useMemo(() => {
     const sortedProjects = [...projects].sort(
-      (a, b) => a.order - b.order
+      (a, b) => a.displayOrder - b.displayOrder
     );
 
     if (activeCategory === "all") {
@@ -19,7 +42,7 @@ export default function ProjectGrid() {
     return sortedProjects.filter((project) =>
       project.categories.includes(activeCategory)
     );
-  }, [activeCategory]);
+  }, [projects, activeCategory]);
 
   return (
     <section
@@ -50,24 +73,43 @@ export default function ProjectGrid() {
         />
       </div>
 
-      {/* Project count */}
-      <p className="mt-8 text-sm text-zinc-500">
-        {filteredProjects.length}{" "}
-        {filteredProjects.length === 1
-          ? "project"
-          : "projects"}
-      </p>
+      {/* Loading */}
+      {loading && (
+        <p className="mt-8 text-sm text-zinc-500">
+          Loading projects...
+        </p>
+      )}
 
-      {/* Cards */}
-      <div className="mt-5 grid gap-6 lg:grid-cols-2">
-        {filteredProjects.map((project, index) => (
-          <ProjectCard
-            key={project.id}
-            project={project}
-            index={index}
-          />
-        ))}
-      </div>
+      {/* Error */}
+      {!loading && error && (
+        <p className="mt-8 text-sm text-red-400">
+          {error}
+        </p>
+      )}
+
+      {/* Projects */}
+      {!loading && !error && (
+        <>
+          {/* Project count */}
+          <p className="mt-8 text-sm text-zinc-500">
+            {filteredProjects.length}{" "}
+            {filteredProjects.length === 1
+              ? "project"
+              : "projects"}
+          </p>
+
+          {/* Cards */}
+          <div className="mt-5 grid gap-6 lg:grid-cols-2">
+            {filteredProjects.map((project, index) => (
+              <ProjectCard
+                key={project.id}
+                project={project}
+                index={index}
+              />
+            ))}
+          </div>
+        </>
+      )}
     </section>
   );
 }

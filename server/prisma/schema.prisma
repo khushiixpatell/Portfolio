@@ -1,0 +1,94 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Project {
+  id            Int      @id @default(autoincrement())
+  slug          String   @unique
+  title         String
+  shortTitle    String?
+  description   String
+  categories    String[]
+  categoryLabel String
+  type          String
+  contribution  String?
+  technologies  String[]
+  status        String   @default("Completed")
+
+  featured     Boolean @default(false)
+  visible      Boolean @default(true)
+  displayOrder Int     @default(0)
+
+  githubUrl String?
+  liveUrl   String?
+  imageUrl  String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([visible, displayOrder])
+}
+
+model Experience {
+  id           Int      @id @default(autoincrement())
+  company      String
+  role         String
+  location     String?
+  startDate    String
+  endDate      String?
+  description  String?
+  highlights   String[]
+  technologies String[]
+
+  visible      Boolean @default(true)
+  displayOrder Int     @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([visible, displayOrder])
+}
+
+model SkillGroup {
+  id           Int    @id @default(autoincrement())
+  title        String
+  displayOrder Int    @default(0)
+
+  skills Skill[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Skill {
+  id           Int    @id @default(autoincrement())
+  name         String
+  displayOrder Int    @default(0)
+
+  groupId Int
+  group   SkillGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([groupId, name])
+  @@index([groupId, displayOrder])
+}
+
+model ContactMessage {
+  id      Int     @id @default(autoincrement())
+  name    String
+  email   String
+  subject String?
+  message String
+
+  read Boolean @default(false)
+
+  createdAt DateTime @default(now())
+
+  @@index([read, createdAt])
+}
