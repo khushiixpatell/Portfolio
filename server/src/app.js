@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 
 import projectRoutes from "./routes/projectRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
+import adminProjectRoutes from "./routes/adminProjectRoutes.js";
 
 dotenv.config();
 
@@ -27,7 +28,7 @@ app.get("/api/health", (req, res) => {
 
 app.use("/api/projects", projectRoutes);
 app.use("/api/auth", authRoutes);
-
+app.use("/api/admin/projects", adminProjectRoutes);
 app.use((req, res) => {
   res.status(404).json({
     success: false,

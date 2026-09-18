@@ -22,6 +22,7 @@ export default function App() {
 
         <Routes>
           <Route path="/" element={<Home />} />
+          
           <Route 
             path="/khushi-admin/login"
             element={<AdminLogin />}
