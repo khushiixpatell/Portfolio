@@ -4,12 +4,31 @@ import DeleteProjectDialog from "../../components/admin/DeleteProjectDialog";
 
 
 import {
+  DndContext,
+  PointerSensor,
+  KeyboardSensor,
+  closestCenter,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
+
+import {
+  SortableContext,
+  arrayMove,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+
+import {
   deleteAdminProject,
   getAdminProjects,
   updateAdminProject,
+  reorderAdminProjects,
 } from "../../services/api";
 
 import ProjectEditor from "../../components/admin/ProjectEditor";
+import SortableProject from "../../components/admin/SortableProject";
+import ExperienceManager from "../../components/admin/ExperienceManager";
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
@@ -23,6 +42,20 @@ export default function AdminDashboard() {
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState("");
+  const [activeSection, setActiveSection] = useState("projects");
+
+  const sensors = useSensors(
+  useSensor(PointerSensor, {
+    activationConstraint: {
+      distance: 6,
+    },
+  }),
+
+  useSensor(KeyboardSensor, {
+    coordinateGetter:
+      sortableKeyboardCoordinates,
+  })
+);
 
   useEffect(() => {
     loadProjects();
@@ -121,6 +154,65 @@ function handleCancelDelete() {
   setDeleteError("");
 }
 
+async function handleDragEnd(event) {
+  const { active, over } = event;
+
+  if (!over || active.id === over.id) {
+    return;
+  }
+
+  const oldIndex = projects.findIndex(
+    (project) => project.id === active.id
+  );
+
+  const newIndex = projects.findIndex(
+    (project) => project.id === over.id
+  );
+
+  if (oldIndex === -1 || newIndex === -1) {
+    return;
+  }
+
+  const previousProjects = projects;
+
+  const reorderedProjects = arrayMove(
+    projects,
+    oldIndex,
+    newIndex
+  ).map((project, index) => ({
+    ...project,
+    displayOrder: index + 1,
+  }));
+
+  // Update the interface immediately.
+  setProjects(reorderedProjects);
+
+  try {
+    const savedProjects =
+      await reorderAdminProjects(
+        reorderedProjects.map((project) => ({
+          id: project.id,
+          displayOrder:
+            project.displayOrder,
+        }))
+      );
+
+    setProjects(savedProjects);
+  } catch (error) {
+    console.error(
+      "Unable to reorder projects:",
+      error
+    );
+
+    // Restore old order if database update fails.
+    setProjects(previousProjects);
+
+    setError(
+      "Unable to save the new project order."
+    );
+  }
+}
+
 async function handleConfirmDelete() {
   if (!deleteTarget) {
     return;
@@ -178,7 +270,40 @@ async function handleConfirmDelete() {
         </button>
       </div>
 
-      <section className="py-10">
+      <div className="mb-10 flex gap-2 border-b border-white/10 pb-4">
+        <button
+          type="button"
+          onClick={() => {
+            handleCloseEditor();
+            setActiveSection("projects")
+          }}
+          className={
+            activeSection === "projects"
+              ? "rounded-xl bg-white px-4 py-2 text-sm font-medium text-zinc-950"
+              : "rounded-xl px-4 py-2 text-sm text-zinc-500 transition hover:text-white"
+          }
+        >
+          Projects
+        </button>
+
+        <button
+          type="button"
+          onClick={() => {
+            handleCloseEditor();
+            setActiveSection("experience");
+          }}
+          className={
+            activeSection === "experience"
+              ? "rounded-xl bg-white px-4 py-2 text-sm font-medium text-zinc-950"
+              : "rounded-xl px-4 py-2 text-sm text-zinc-500 transition hover:text-white"
+          }
+        >
+          Experience
+        </button>
+      </div>
+
+      {activeSection === "projects" && (
+        <section className="py-10">
         <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <h2 className="text-2xl font-semibold text-white">
@@ -224,127 +349,148 @@ async function handleConfirmDelete() {
         )}
 
         {!loading && projects.length > 0 && (
-          <div className="mt-8 space-y-4">
-            {projects.map((project) => {
-              const isUpdating =
-                updatingId === project.id;
+  <DndContext
+    sensors={sensors}
+    collisionDetection={closestCenter}
+    onDragEnd={handleDragEnd}
+  >
+    <SortableContext
+      items={projects.map((project) => project.id)}
+      strategy={verticalListSortingStrategy}
+    >
+      <div className="mt-8 space-y-4">
+        {projects.map((project) => {
+          const isUpdating =
+            updatingId === project.id;
 
-              return (
-                <article
-                  key={project.id}
-                  className="rounded-2xl border border-white/10 bg-white/[0.02] p-6"
-                >
-                  <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
-                    <div className="min-w-0 flex-1">
-                      <div className="flex flex-wrap items-center gap-3">
-                        <h3 className="text-lg font-semibold text-white">
-                          {project.title}
-                        </h3>
+          return (
+            <SortableProject
+              key={project.id}
+              project={project}
+            >
+              <article className="rounded-2xl border border-white/10 bg-white/[0.02] p-6">
+                <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-3">
+                      <h3 className="text-lg font-semibold text-white">
+                        {project.title}
+                      </h3>
 
-                        <span className="rounded-full border border-white/10 px-2.5 py-1 text-xs text-zinc-400">
-                          {project.status}
-                        </span>
-                      </div>
-
-                      <p className="mt-2 text-sm text-sky-400">
-                        {project.categoryLabel}
-                      </p>
-
-                      <p className="mt-3 max-w-2xl text-sm leading-6 text-zinc-400">
-                        {project.description}
-                      </p>
-
-                      <div className="mt-4 flex flex-wrap gap-2">
-                        {project.technologies.map(
-                          (technology) => (
-                            <span
-                              key={technology}
-                              className="rounded-lg bg-white/[0.04] px-2.5 py-1 text-xs text-zinc-400"
-                            >
-                              {technology}
-                            </span>
-                          )
-                        )}
-                      </div>
+                      <span className="rounded-full border border-white/10 px-2.5 py-1 text-xs text-zinc-400">
+                        {project.status}
+                      </span>
                     </div>
 
-                    <div className="flex shrink-0 flex-col gap-3 sm:flex-row lg:flex-col">
-                      <button
-                        type="button"
-                        disabled={isUpdating}
-                        onClick={() =>
-                          handleToggle(
-                            project,
-                            "visible"
-                          )
-                        }
-                        className={`
-                          min-w-32 rounded-xl border px-4 py-2
-                          text-sm transition
-                          disabled:cursor-not-allowed
-                          disabled:opacity-50
-                          ${
-                            project.visible
-                              ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-400"
-                              : "border-white/10 bg-white/[0.03] text-zinc-500"
-                          }
-                        `}
-                      >
-                        {project.visible
-                          ? "Visible"
-                          : "Hidden"}
-                      </button>
+                    <p className="mt-2 text-sm text-sky-400">
+                      {project.categoryLabel}
+                    </p>
 
-                      <button
-                        type="button"
-                        disabled={isUpdating}
-                        onClick={() =>
-                          handleToggle(
-                            project,
-                            "featured"
-                          )
-                        }
-                        className={`
-                          min-w-32 rounded-xl border px-4 py-2
-                          text-sm transition
-                          disabled:cursor-not-allowed
-                          disabled:opacity-50
-                          ${
-                            project.featured
-                              ? "border-sky-500/20 bg-sky-500/10 text-sky-400"
-                              : "border-white/10 bg-white/[0.03] text-zinc-500"
-                          }
-                        `}
-                      >
-                        {project.featured
-                          ? "Featured"
-                          : "Not Featured"}
-                      </button>
+                    <p className="mt-3 max-w-2xl text-sm leading-6 text-zinc-400">
+                      {project.description}
+                    </p>
 
-                      <button
-                        type="button"
-                        onClick={() => handleEditProject(project)}
-                        className="min-w-32 rounded-xl border border-white/10 px-4 py-2 text-sm text-zinc-300 transition hover:border-white/20 hover:text-white"
-                      >
-                        Edit
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => handleDeleteClick(project)}
-                        className="min-w-32 rounded-xl border border-red-500/20 px-4 py-2 text-sm text-red-400 transition hover:bg-red-500/10"
-                      >
-                       Delete
-                      </button>
-
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      {project.technologies.map(
+                        (technology) => (
+                          <span
+                            key={technology}
+                            className="rounded-lg bg-white/[0.04] px-2.5 py-1 text-xs text-zinc-400"
+                          >
+                            {technology}
+                          </span>
+                        )
+                      )}
                     </div>
                   </div>
-                </article>
-              );
-            })}
-          </div>
-        )}
+
+                  <div className="flex shrink-0 flex-col gap-3 sm:flex-row lg:flex-col">
+                    <button
+                      type="button"
+                      disabled={isUpdating}
+                      onClick={() =>
+                        handleToggle(
+                          project,
+                          "visible"
+                        )
+                      }
+                      className={`
+                        min-w-32 rounded-xl border px-4 py-2
+                        text-sm transition
+                        disabled:cursor-not-allowed
+                        disabled:opacity-50
+                        ${
+                          project.visible
+                            ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-400"
+                            : "border-white/10 bg-white/[0.03] text-zinc-500"
+                        }
+                      `}
+                    >
+                      {project.visible
+                        ? "Visible"
+                        : "Hidden"}
+                    </button>
+
+                    <button
+                      type="button"
+                      disabled={isUpdating}
+                      onClick={() =>
+                        handleToggle(
+                          project,
+                          "featured"
+                        )
+                      }
+                      className={`
+                        min-w-32 rounded-xl border px-4 py-2
+                        text-sm transition
+                        disabled:cursor-not-allowed
+                        disabled:opacity-50
+                        ${
+                          project.featured
+                            ? "border-sky-500/20 bg-sky-500/10 text-sky-400"
+                            : "border-white/10 bg-white/[0.03] text-zinc-500"
+                        }
+                      `}
+                    >
+                      {project.featured
+                        ? "Featured"
+                        : "Not Featured"}
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() =>
+                        handleEditProject(project)
+                      }
+                      className="min-w-32 rounded-xl border border-white/10 px-4 py-2 text-sm text-zinc-300 transition hover:border-white/20 hover:text-white"
+                    >
+                      Edit
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() =>
+                        handleDeleteClick(project)
+                      }
+                      className="min-w-32 rounded-xl border border-red-500/20 px-4 py-2 text-sm text-red-400 transition hover:bg-red-500/10"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </div>
+              </article>
+            </SortableProject>
+          );
+        })}
+      </div>
+    </SortableContext>
+  </DndContext>
+)}
       </section>
+      )}
+      {activeSection === "experience" && (
+        <ExperienceManager />
+      )}
+
       {editorOpen && (
   <ProjectEditor
     project={editingProject}

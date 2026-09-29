@@ -7,11 +7,12 @@ datasource db {
 }
 
 model Project {
-  id            Int      @id @default(autoincrement())
-  slug          String   @unique
-  title         String
-  shortTitle    String?
-  description   String
+  id          Int     @id @default(autoincrement())
+  slug        String  @unique
+  title       String
+  shortTitle  String?
+  description String
+
   categories    String[]
   categoryLabel String
   type          String
@@ -23,9 +24,26 @@ model Project {
   visible      Boolean @default(true)
   displayOrder Int     @default(0)
 
-  githubUrl String?
-  liveUrl   String?
-  imageUrl  String?
+  githubUrl     String?
+  liveUrl       String?
+  imageUrl      String?
+  imagePublicId String?
+
+  // Case study content
+  overview   String?
+  problem    String?
+  solution   String?
+  challenges String?
+  results    String?
+
+  // Optional case study lists
+  responsibilities String[]
+  highlights       String[]
+  learnings        String[]
+
+  // Additional project images
+  screenshots         String[]
+  screenshotPublicIds String[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -39,10 +57,11 @@ model Experience {
   role         String
   location     String?
   startDate    String
-  endDate      String?
-  description  String?
-  highlights   String[]
+  endDate      String
+  description  String
   technologies String[]
+
+  companyUrl String?
 
   visible      Boolean @default(true)
   displayOrder Int     @default(0)

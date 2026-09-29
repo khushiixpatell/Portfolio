@@ -5,6 +5,11 @@ import dotenv from "dotenv";
 import projectRoutes from "./routes/projectRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
 import adminProjectRoutes from "./routes/adminProjectRoutes.js";
+import uploadRoutes from "./routes/uploadRoutes.js";
+import experienceRoutes from "./routes/experienceRoutes.js";
+import adminExperienceRoutes from "./routes/adminExperienceRoutes.js";
+import skillRoutes from "./routes/skillRoutes.js";
+import adminSkillRoutes from "./routes/adminSkillRoutes.js";
 
 dotenv.config();
 
@@ -29,6 +34,12 @@ app.get("/api/health", (req, res) => {
 app.use("/api/projects", projectRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/admin/projects", adminProjectRoutes);
+app.use("/api/admin/uploads", uploadRoutes);
+app.use("/api/experiences", experienceRoutes);
+app.use("/api/admin/experiences", adminExperienceRoutes);
+app.use("/api/skills", skillRoutes);
+app.use("/api/admin/skills", adminSkillRoutes);
+
 app.use((req, res) => {
   res.status(404).json({
     success: false,

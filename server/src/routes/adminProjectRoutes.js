@@ -7,6 +7,7 @@ import {
   createProject,
   updateProject,
   deleteProject,
+  reorderProjects,
 } from "../controllers/adminProjectController.js";
 
 const router = express.Router();
@@ -16,6 +17,13 @@ router.use(requireAdmin);
 
 router.get("/", getAdminProjects);
 router.post("/", createProject);
+
+router.put(
+  "/reorder",
+  requireAdmin,
+  reorderProjects
+);
+
 router.patch("/:id", updateProject);
 router.delete("/:id", deleteProject);
 

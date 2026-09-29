@@ -1,70 +1,39 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
 
-import Navbar from "./components/layout/Navbar";
-import Footer from "./components/layout/Footer";
-
-import AdminLogin from "./pages/admin/AdminLogin";
-import AdminDashboard from "./pages/admin/AdminDashboard";
+import PublicLayout from "./components/layout/PublicLayout";
 import ProtectedRoute from "./components/admin/ProtectedRoute";
 
 import Home from "./pages/Home";
-import BiteWise from "./pages/projects/BiteWise";
-import Zeuty from "./pages/projects/Zeuty";
-import GDGCommandHub from "./pages/projects/GDGCommandHub";
-import GECAI from "./pages/projects/GECAI";
-import ConnectFour from "./pages/projects/ConnectFour";
+
+import ProjectPage from "./pages/projects/ProjectPage";
+
+import AdminLogin from "./pages/admin/AdminLogin";
+import AdminDashboard from "./pages/admin/AdminDashboard";
 
 export default function App() {
   return (
     <BrowserRouter>
-      <div className="min-h-screen bg-zinc-950 text-zinc-100">
-        <Navbar />
-
-        <Routes>
+      <Routes>
+        <Route element={<PublicLayout />}>
           <Route path="/" element={<Home />} />
-          
-          <Route 
-            path="/khushi-admin/login"
-            element={<AdminLogin />}
-          />
 
-          <Route
-            path="/khushi-admin"
-            element={
-              <ProtectedRoute>
-                <AdminDashboard />
-              </ProtectedRoute>
-            }
-          />
+          <Route path="/projects/:slug" element={<ProjectPage />} />
+        </Route>
+        
+        <Route
+          path="/khushi-admin/login"
+          element={<AdminLogin />}
+        />
 
-          <Route
-            path="/projects/gdg-command-hub"
-            element={<GDGCommandHub />}
-          />
-
-          <Route
-            path="/projects/gec-ai"
-            element={<GECAI />}
-          />
-
-          <Route
-            path="/projects/connect-four-ai"
-            element={<ConnectFour />}
-          />
-
-          <Route
-            path="/projects/bitewise"
-            element={<BiteWise />}
-          />
-
-          <Route
-            path="/projects/zeuty"
-            element={<Zeuty />}
-          />
-        </Routes>
-
-        <Footer />
-      </div>
+        <Route
+          path="/khushi-admin"
+          element={
+            <ProtectedRoute>
+              <AdminDashboard />
+            </ProtectedRoute>
+          }
+        />
+      </Routes>
     </BrowserRouter>
   );
 }

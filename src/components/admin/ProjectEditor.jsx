@@ -3,6 +3,8 @@ import { useEffect, useState } from "react";
 import {
   createAdminProject,
   updateAdminProject,
+  uploadProjectImage,
+  deleteProjectImage,
 } from "../../services/api";
 
 const emptyProject = {
@@ -27,6 +29,20 @@ const emptyProject = {
   visible: true,
   featured: false,
   displayOrder: 0,
+
+  overview: "",
+  problem: "",
+  solution: "",
+  challenges: "",
+  results: "",
+
+  responsibilities: "",
+  highlights: "",
+  learnings: "",
+  screenshots: "",
+
+  imagePublicId: "",
+  screenshotPublicIds: "",
 };
 
 const categoryOptions = [
@@ -54,8 +70,15 @@ export default function ProjectEditor({
   const [formData, setFormData] = useState(emptyProject);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [imageUploadError, setImageUploadError] = useState("");
+  const [uploadingScreenshots, setUploadingScreenshots] = useState(false);
+  const [screenshotUploadError, setScreenshotUploadError] = useState("");
+  const [pendingDeletions, setPendingDeletions] = useState([]);
 
   useEffect(() => {
+    setPendingDeletions([]);
+
     if (!project) {
       setFormData(emptyProject);
       return;
@@ -85,6 +108,28 @@ export default function ProjectEditor({
       visible: project.visible ?? true,
       featured: project.featured ?? false,
       displayOrder: project.displayOrder ?? 0,
+
+      overview: project.overview || "",
+      problem: project.problem || "",
+      solution: project.solution || "",
+      challenges: project.challenges || "",
+      results: project.results || "",
+
+      responsibilities:
+        project.responsibilities?.join("\n") || "",
+
+      highlights:
+        project.highlights?.join("\n") || "",
+
+      learnings:
+        project.learnings?.join("\n") || "",
+
+      screenshots:
+        project.screenshots?.join("\n") || "",
+
+      imagePublicId: project.imagePublicId || "",
+
+      screenshotPublicIds: project.screenshotPublicIds?.join("\n") || "",
     });
   }, [project]);
 
@@ -144,6 +189,31 @@ export default function ProjectEditor({
           .split(",")
           .map((technology) => technology.trim())
           .filter(Boolean),
+
+        responsibilities: formData.responsibilities
+          .split("\n")
+          .map((item) => item.trim())
+          .filter(Boolean),
+
+        highlights: formData.highlights
+          .split("\n")
+          .map((item) => item.trim())
+          .filter(Boolean),
+
+        learnings: formData.learnings
+          .split("\n")
+          .map((item) => item.trim())
+          .filter(Boolean),
+
+        screenshots: formData.screenshots
+          .split("\n")
+          .map((item) => item.trim())
+          .filter(Boolean),
+
+        screenshotPublicIds: formData.screenshotPublicIds
+          .split("\n")
+          .map((id) => id.trim())
+          .filter(Boolean),
       };
 
       let savedProject;
@@ -158,6 +228,33 @@ export default function ProjectEditor({
           await createAdminProject(payload);
       }
 
+      if (pendingDeletions.length > 0) {
+  const uniqueDeletions = [
+    ...new Set(pendingDeletions),
+  ];
+
+  const deletionResults =
+    await Promise.allSettled(
+      uniqueDeletions.map((publicId) =>
+        deleteProjectImage(publicId)
+      )
+    );
+
+  const failedDeletions =
+    deletionResults.filter(
+      (result) =>
+        result.status === "rejected"
+    );
+
+  if (failedDeletions.length > 0) {
+    console.warn(
+      `${failedDeletions.length} Cloudinary image(s) could not be deleted.`
+    );
+  }
+}
+
+setPendingDeletions([]);
+
       onSaved(savedProject);
     } catch (err) {
       console.error("Unable to save project:", err);
@@ -166,6 +263,172 @@ export default function ProjectEditor({
       setSaving(false);
     }
   }
+
+  async function handleMainImageUpload(event) {
+  const file = event.target.files?.[0];
+
+  if (!file) return;
+
+  const previousPublicId = formData.imagePublicId;
+
+  try {
+    setUploadingImage(true);
+    setImageUploadError("");
+
+    const uploadedImage =
+      await uploadProjectImage(file);
+
+    if (
+      previousPublicId &&
+      previousPublicId !== uploadedImage.publicId
+    ) {
+      setPendingDeletions((current) => [
+        ...current,
+        previousPublicId,
+      ]);
+    }
+
+    setFormData((current) => ({
+      ...current,
+      imageUrl: uploadedImage.url,
+      imagePublicId: uploadedImage.publicId,
+    }));
+  } catch (error) {
+    console.error(error);
+
+    setImageUploadError(
+      error.message || "Unable to upload image."
+    );
+  } finally {
+    setUploadingImage(false);
+
+    event.target.value = "";
+  }
+}
+
+  async function handleScreenshotUpload(event) {
+  const files = Array.from(event.target.files || []);
+
+  if (!files.length) return;
+
+  try {
+    setUploadingScreenshots(true);
+    setScreenshotUploadError("");
+
+    const uploadedImages = await Promise.all(
+      files.map((file) => uploadProjectImage(file))
+    );
+
+    const newUrls = uploadedImages.map(
+      (image) => image.url
+    );
+
+    const newPublicIds = uploadedImages.map(
+      (image) => image.publicId
+    );
+
+    setFormData((current) => {
+  const existingScreenshots = current.screenshots
+    ? current.screenshots
+        .split("\n")
+        .map((url) => url.trim())
+        .filter(Boolean)
+    : [];
+
+  const existingPublicIds =
+    current.screenshotPublicIds
+      ? current.screenshotPublicIds
+          .split("\n")
+          .map((id) => id.trim())
+          .filter(Boolean)
+      : [];
+
+  return {
+    ...current,
+
+    screenshots: [
+      ...existingScreenshots,
+      ...newUrls,
+    ].join("\n"),
+
+    screenshotPublicIds: [
+      ...existingPublicIds,
+      ...newPublicIds,
+    ].join("\n"),
+  };
+});
+  } catch (error) {
+    console.error(error);
+
+    setScreenshotUploadError(
+      error.message ||
+        "Unable to upload screenshots."
+    );
+  } finally {
+    setUploadingScreenshots(false);
+    event.target.value = "";
+  }
+}
+
+function handleRemoveMainImage() {
+  if (formData.imagePublicId) {
+    setPendingDeletions((current) => [
+      ...current,
+      formData.imagePublicId,
+    ]);
+  }
+
+  setFormData((current) => ({
+    ...current,
+    imageUrl: "",
+    imagePublicId: "",
+  }));
+
+  setImageUploadError("");
+}
+
+function removeScreenshot(indexToRemove) {
+  const screenshots = formData.screenshots
+    .split("\n")
+    .map((url) => url.trim())
+    .filter(Boolean);
+
+  const publicIds = formData.screenshotPublicIds
+    .split("\n")
+    .map((id) => id.trim())
+    .filter(Boolean);
+
+  const publicId = publicIds[indexToRemove];
+
+  if (publicId) {
+    setPendingDeletions((current) => [
+      ...current,
+      publicId,
+    ]);
+  }
+
+  const updatedScreenshots =
+    screenshots.filter(
+      (_, index) => index !== indexToRemove
+    );
+
+  const updatedPublicIds =
+    publicIds.filter(
+      (_, index) => index !== indexToRemove
+    );
+
+  setFormData((current) => ({
+    ...current,
+
+    screenshots:
+      updatedScreenshots.join("\n"),
+
+    screenshotPublicIds:
+      updatedPublicIds.join("\n"),
+  }));
+
+  setScreenshotUploadError("");
+}
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto bg-black/80 px-4 py-10 backdrop-blur-sm">
@@ -236,6 +499,7 @@ export default function ProjectEditor({
                     onChange={handleChange}
                     placeholder="my-project"
                     required
+                    disabled={isEditing}
                   />
                 </div>
 
@@ -331,6 +595,67 @@ export default function ProjectEditor({
             </p>
           </FormSection>
 
+          <FormSection title="Case Study">
+            <TextArea
+              label="Overview"
+              name="overview"
+              value={formData.overview}
+              onChange={handleChange}
+            />
+
+            <TextArea
+              label="Problem"
+              name="problem"
+              value={formData.problem}
+              onChange={handleChange}
+            />
+
+            <TextArea
+              label="Solution"
+              name="solution"
+              value={formData.solution}
+              onChange={handleChange}
+            />
+
+            <TextArea
+              label="Challenges"
+              name="challenges"
+              value={formData.challenges}
+              onChange={handleChange}
+            />
+
+            <TextArea
+              label="Results"
+              name="results"
+              value={formData.results}
+              onChange={handleChange}
+            />
+
+            <ListField
+              label="Responsibilities"
+              name="responsibilities"
+              value={formData.responsibilities}
+              onChange={handleChange}
+              placeholder={`Built the frontend application\nIntegrated REST APIs\nImplemented responsive layouts`}
+            />
+
+            <ListField
+              label="Key Highlights"
+              name="highlights"
+              value={formData.highlights}
+              onChange={handleChange}
+              placeholder={`Responsive across devices\nSecure authentication\nDatabase-driven project management`}
+            />
+
+            <ListField
+              label="What I Learned"
+              name="learnings"
+              value={formData.learnings}
+              onChange={handleChange}
+              placeholder={`Designing REST APIs\nWorking with PostgreSQL\nStructuring full-stack applications`}
+            />
+          </FormSection>
+
           <FormSection title="Status & Display">
             <div>
               <label className="text-sm text-zinc-300">
@@ -401,14 +726,146 @@ export default function ProjectEditor({
               placeholder="https://..."
             />
 
-            <Field
-              label="Image URL"
-              name="imageUrl"
-              type="url"
-              value={formData.imageUrl}
-              onChange={handleChange}
-              placeholder="https://..."
+            <div>
+  <label className="text-sm text-zinc-300">
+    Main Project Image
+  </label>
+
+  <div className="mt-2 rounded-2xl border border-dashed border-white/10 bg-white/[0.02] p-5">
+    {formData.imageUrl ? (
+      <div>
+        <div className="overflow-hidden rounded-xl border border-white/10">
+          <img
+            src={formData.imageUrl}
+            alt="Project preview"
+            className="max-h-72 w-full object-cover"
+          />
+        </div>
+
+        <div className="mt-4 flex flex-wrap gap-3">
+          <label className="cursor-pointer rounded-xl border border-white/10 px-4 py-2 text-sm text-zinc-300 transition hover:border-white/20 hover:text-white">
+            {uploadingImage
+              ? "Uploading..."
+              : "Replace Image"}
+
+            <input
+              type="file"
+              accept="image/jpeg,image/png,image/webp,image/gif"
+              onChange={handleMainImageUpload}
+              disabled={uploadingImage}
+              className="hidden"
             />
+          </label>
+
+          <button
+            type="button"
+            onClick={handleRemoveMainImage}
+            disabled={uploadingImage}
+            className="rounded-xl border border-red-400/20 px-4 py-2 text-sm text-red-300 transition hover:border-red-400/40"
+          >
+            Remove
+          </button>
+        </div>
+      </div>
+    ) : (
+      <label className="flex cursor-pointer flex-col items-center justify-center py-8 text-center">
+        <span className="text-sm font-medium text-zinc-300">
+          {uploadingImage
+            ? "Uploading image..."
+            : "Choose project image"}
+        </span>
+
+        <span className="mt-2 text-xs text-zinc-600">
+          JPG, PNG, WebP or GIF — max 10 MB
+        </span>
+
+        <input
+          type="file"
+          accept="image/jpeg,image/png,image/webp,image/gif"
+          onChange={handleMainImageUpload}
+          disabled={uploadingImage}
+          className="hidden"
+        />
+      </label>
+    )}
+  </div>
+
+  {imageUploadError && (
+    <p className="mt-2 text-sm text-red-400">
+      {imageUploadError}
+    </p>
+  )}
+</div>
+
+            <div>
+  <label className="text-sm text-zinc-300">
+    Project Screenshots
+  </label>
+
+  <div className="mt-2 rounded-2xl border border-dashed border-white/10 bg-white/[0.02] p-5">
+    {formData.screenshots && (
+      <div className="mb-5 grid gap-4 sm:grid-cols-2">
+        {formData.screenshots
+          .split("\n")
+          .map((url) => url.trim())
+          .filter(Boolean)
+          .map((url, index) => (
+            <div
+              key={`${url}-${index}`}
+              className="group relative overflow-hidden rounded-xl border border-white/10"
+            >
+              <img
+                src={url}
+                alt={`Project screenshot ${index + 1}`}
+                className="h-40 w-full object-cover"
+              />
+
+              <button
+                type="button"
+                onClick={() =>
+                  removeScreenshot(index)
+                }
+                className="absolute right-2 top-2 rounded-lg bg-black/70 px-3 py-1.5 text-xs text-white opacity-0 transition group-hover:opacity-100"
+              >
+                Remove
+              </button>
+
+              <div className="absolute bottom-2 left-2 rounded-md bg-black/70 px-2 py-1 text-xs text-zinc-300">
+                {index + 1}
+              </div>
+            </div>
+          ))}
+      </div>
+    )}
+
+    <label className="flex cursor-pointer flex-col items-center justify-center rounded-xl border border-white/10 py-7 text-center transition hover:border-white/20">
+      <span className="text-sm font-medium text-zinc-300">
+        {uploadingScreenshots
+          ? "Uploading screenshots..."
+          : "Add screenshots"}
+      </span>
+
+      <span className="mt-2 text-xs text-zinc-600">
+        Select multiple images if needed
+      </span>
+
+      <input
+        type="file"
+        accept="image/jpeg,image/png,image/webp,image/gif"
+        multiple
+        onChange={handleScreenshotUpload}
+        disabled={uploadingScreenshots}
+        className="hidden"
+      />
+    </label>
+  </div>
+
+  {screenshotUploadError && (
+    <p className="mt-2 text-sm text-red-400">
+      {screenshotUploadError}
+    </p>
+  )}
+</div>
           </FormSection>
 
           <div className="flex flex-col-reverse gap-3 border-t border-white/10 pt-6 sm:flex-row sm:justify-end">
@@ -460,6 +917,7 @@ function Field({
   type = "text",
   placeholder = "",
   required = false,
+  disabled = false,
 }) {
   return (
     <div>
@@ -478,8 +936,8 @@ function Field({
         onChange={onChange}
         placeholder={placeholder}
         required={required}
-        className="mt-2 w-full rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 text-white outline-none transition placeholder:text-zinc-600 focus:border-sky-400/50"
-      />
+        disabled={disabled}
+        className="mt-2 w-full rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 text-white outline-none transition placeholder:text-zinc-600 focus:border-sky-400/50 disabled:cursor-not-allowed disabled:opacity-50"      />
     </div>
   );
 }
@@ -509,6 +967,39 @@ function TextArea({
         rows={5}
         className="mt-2 w-full resize-y rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 text-white outline-none transition focus:border-sky-400/50"
       />
+    </div>
+  );
+}
+
+function ListField({
+  label,
+  name,
+  value,
+  onChange,
+  placeholder = "",
+}) {
+  return (
+    <div>
+      <label
+        htmlFor={name}
+        className="text-sm text-zinc-300"
+      >
+        {label}
+      </label>
+
+      <textarea
+        id={name}
+        name={name}
+        value={value}
+        onChange={onChange}
+        placeholder={placeholder}
+        rows={4}
+        className="mt-2 w-full resize-y rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 text-white outline-none transition placeholder:text-zinc-600 focus:border-sky-400/50"
+      />
+
+      <p className="mt-2 text-xs text-zinc-600">
+        Enter one item per line.
+      </p>
     </div>
   );
 }

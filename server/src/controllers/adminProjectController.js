@@ -41,6 +41,17 @@ export async function createProject(req, res) {
       githubUrl,
       liveUrl,
       imageUrl,
+      overview,
+      problem,
+      solution,
+      challenges,
+      results,
+      responsibilities,
+      highlights,
+      learnings,
+      screenshots,
+      imagePublicId,
+      screenshotPublicIds,
     } = req.body;
 
     if (
@@ -75,6 +86,18 @@ export async function createProject(req, res) {
         githubUrl: githubUrl || null,
         liveUrl: liveUrl || null,
         imageUrl: imageUrl || null,
+        overview: overview || null,
+        problem: problem || null,
+        solution: solution || null,
+        challenges: challenges || null,
+        results: results || null,
+
+        responsibilities: responsibilities || [],
+        highlights: highlights || [],
+        learnings: learnings || [],
+        screenshots: screenshots || [],
+        imagePublicId: imagePublicId || null,
+        screenshotPublicIds: screenshotPublicIds || [],
       },
     });
 
@@ -128,6 +151,17 @@ export async function updateProject(req, res) {
       "githubUrl",
       "liveUrl",
       "imageUrl",
+      "overview",
+      "problem",
+      "solution",
+      "challenges",
+      "results",
+      "responsibilities",
+      "highlights",
+      "learnings",
+      "screenshots",
+      "imagePublicId",
+      "screenshotPublicIds",
     ];
 
     const data = {};
@@ -208,6 +242,76 @@ export async function deleteProject(req, res) {
     res.status(500).json({
       success: false,
       message: "Unable to delete project.",
+    });
+  }
+}
+
+export async function reorderProjects(req, res) {
+  try {
+    const { projects } = req.body;
+
+    if (!Array.isArray(projects)) {
+      return res.status(400).json({
+        success: false,
+        message: "Projects must be an array.",
+      });
+    }
+
+    const validProjects = projects.every(
+      (project) =>
+        Number.isInteger(project.id) &&
+        Number.isInteger(project.displayOrder)
+    );
+
+    if (!validProjects) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid project ordering data.",
+      });
+    }
+
+    // Update each project's display order.
+    // We intentionally avoid Prisma's transaction API here
+    // because this deployment/database configuration can
+    // time out while acquiring an interactive transaction.
+    await Promise.all(
+      projects.map((project) =>
+        prisma.project.update({
+          where: {
+            id: project.id,
+          },
+          data: {
+            displayOrder: project.displayOrder,
+          },
+        })
+      )
+    );
+
+    const updatedProjects =
+      await prisma.project.findMany({
+        orderBy: [
+          {
+            displayOrder: "asc",
+          },
+          {
+            id: "asc",
+          },
+        ],
+      });
+
+    return res.status(200).json({
+      success: true,
+      data: updatedProjects,
+    });
+  } catch (error) {
+    console.error(
+      "REORDER PROJECTS ERROR:",
+      error
+    );
+
+    return res.status(500).json({
+      success: false,
+      message: "Unable to reorder projects.",
     });
   }
 }
