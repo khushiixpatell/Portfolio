@@ -1,6 +1,34 @@
-import { skillGroups } from "../../data/skills";
+import { useEffect, useState } from "react";
+import { getSkills } from "../../services/api";
 
 export default function Skills() {
+  const [skillGroups, setSkillGroups] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    async function loadSkills() {
+      try {
+        setLoading(true);
+        setError("");
+
+        const data = await getSkills();
+        setSkillGroups(data);
+      } catch (error) {
+        console.error(
+          "Unable to load skills:",
+          error
+        );
+
+        setError("Unable to load skills.");
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadSkills();
+  }, []);
+
   return (
     <section
       id="skills"
@@ -22,29 +50,53 @@ export default function Skills() {
           </p>
         </div>
 
-        <div className="mt-14 divide-y divide-white/10 border-y border-white/10">
-          {skillGroups.map((group) => (
-            <div
-              key={group.title}
-              className="grid gap-5 py-7 md:grid-cols-[220px_1fr]"
-            >
-              <h3 className="text-sm font-medium text-zinc-300">
-                {group.title}
-              </h3>
+        {loading && (
+          <p className="mt-14 text-sm text-zinc-500">
+            Loading skills...
+          </p>
+        )}
 
-              <div className="flex flex-wrap gap-x-6 gap-y-3">
-                {group.skills.map((skill) => (
-                  <span
-                    key={skill}
-                    className="text-sm text-zinc-500 transition hover:text-zinc-200"
-                  >
-                    {skill}
-                  </span>
-                ))}
-              </div>
+        {error && (
+          <p className="mt-14 text-sm text-red-400">
+            {error}
+          </p>
+        )}
+
+        {!loading &&
+          !error &&
+          skillGroups.length > 0 && (
+            <div className="mt-14 divide-y divide-white/10 border-y border-white/10">
+              {skillGroups.map((group) => (
+                <div
+                  key={group.id}
+                  className="grid gap-5 py-7 md:grid-cols-[220px_1fr]"
+                >
+                  <h3 className="text-sm font-medium text-zinc-300">
+                    {group.title}
+                  </h3>
+
+                  <div className="flex flex-wrap gap-x-6 gap-y-3">
+                    {group.skills.map((skill) => (
+                      <span
+                        key={skill.id}
+                        className="text-sm text-zinc-500 transition hover:text-zinc-200"
+                      >
+                        {skill.name}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
+          )}
+
+        {!loading &&
+          !error &&
+          skillGroups.length === 0 && (
+            <p className="mt-14 text-sm text-zinc-500">
+              Skills coming soon.
+            </p>
+          )}
       </div>
     </section>
   );

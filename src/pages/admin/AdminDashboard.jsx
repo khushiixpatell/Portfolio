@@ -29,6 +29,7 @@ import {
 import ProjectEditor from "../../components/admin/ProjectEditor";
 import SortableProject from "../../components/admin/SortableProject";
 import ExperienceManager from "../../components/admin/ExperienceManager";
+import SkillsManager from "../../components/admin/SkillsManager";
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
@@ -300,6 +301,21 @@ async function handleConfirmDelete() {
         >
           Experience
         </button>
+
+        <button
+          type="button"
+          onClick={() => {
+            handleCloseEditor();
+            setActiveSection("skills");
+          }}
+          className={
+            activeSection === "skills"
+              ? "rounded-xl bg-white px-4 py-2 text-sm font-medium text-zinc-950"
+              : "rounded-xl px-4 py-2 text-sm text-zinc-500 transition hover:text-white"
+          }
+        >
+          Skills
+        </button>
       </div>
 
       {activeSection === "projects" && (
@@ -490,6 +506,11 @@ async function handleConfirmDelete() {
       {activeSection === "experience" && (
         <ExperienceManager />
       )}
+
+      {activeSection === "skills" && (
+        <SkillsManager />
+      )}
+
 
       {editorOpen && (
   <ProjectEditor

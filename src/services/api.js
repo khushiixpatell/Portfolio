@@ -374,3 +374,197 @@ export async function getExperiences() {
 
   return data.data;
 }
+
+export async function getAdminSkills() {
+  const token = getAdminToken();
+
+  const response = await fetch(
+    `${API_URL}/admin/skills`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(
+      data.message || "Unable to load skills."
+    );
+  }
+
+  return data.data;
+}
+
+export async function createAdminSkillGroup(title) {
+  const token = getAdminToken();
+
+  const response = await fetch(
+    `${API_URL}/admin/skills/groups`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ title }),
+    }
+  );
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(
+      data.message || "Unable to create skill group."
+    );
+  }
+
+  return data.data;
+}
+
+export async function updateAdminSkillGroup(id, title) {
+  const token = getAdminToken();
+
+  const response = await fetch(
+    `${API_URL}/admin/skills/groups/${id}`,
+    {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ title }),
+    }
+  );
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(
+      data.message || "Unable to update skill group."
+    );
+  }
+
+  return data.data;
+}
+
+export async function deleteAdminSkillGroup(id) {
+  const token = getAdminToken();
+
+  const response = await fetch(
+    `${API_URL}/admin/skills/groups/${id}`,
+    {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(
+      data.message || "Unable to delete skill group."
+    );
+  }
+
+  return data;
+}
+
+export async function createAdminSkill(name, groupId) {
+  const token = getAdminToken();
+
+  const response = await fetch(
+    `${API_URL}/admin/skills/items`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        name,
+        groupId,
+      }),
+    }
+  );
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(
+      data.message || "Unable to create skill."
+    );
+  }
+
+  return data.data;
+}
+
+export async function updateAdminSkill(id, name) {
+  const token = getAdminToken();
+
+  const response = await fetch(
+    `${API_URL}/admin/skills/items/${id}`,
+    {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ name }),
+    }
+  );
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(
+      data.message || "Unable to update skill."
+    );
+  }
+
+  return data.data;
+}
+
+export async function deleteAdminSkill(id) {
+  const token = getAdminToken();
+
+  const response = await fetch(
+    `${API_URL}/admin/skills/items/${id}`,
+    {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(
+      data.message || "Unable to delete skill."
+    );
+  }
+
+  return data;
+}
+
+export async function getSkills() {
+  const response = await fetch(
+    `${API_URL}/skills`
+  );
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(
+      data.message || "Unable to load skills."
+    );
+  }
+
+  return data.data;
+}
