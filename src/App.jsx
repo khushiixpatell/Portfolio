@@ -4,6 +4,7 @@ import PublicLayout from "./components/layout/PublicLayout";
 import ProtectedRoute from "./components/admin/ProtectedRoute";
 
 import Home from "./pages/Home";
+import NotFound from "./pages/NotFound";
 
 import ProjectPage from "./pages/projects/ProjectPage";
 
@@ -33,6 +34,7 @@ export default function App() {
             </ProtectedRoute>
           }
         />
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>
   );

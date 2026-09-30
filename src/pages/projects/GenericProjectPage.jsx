@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import PageTitle from "../../components/layout/PageTitle";
 
 export default function GenericProjectPage({ project }) {
   const hasProblemSolution =
@@ -18,6 +19,7 @@ export default function GenericProjectPage({ project }) {
 
   return (
     <main>
+      <PageTitle title={`${project.title} | Khushi Patel`} />
       {/* HERO */}
       <section className="mx-auto max-w-6xl px-6 pb-20 pt-20 sm:pt-28">
         <div className="max-w-4xl">

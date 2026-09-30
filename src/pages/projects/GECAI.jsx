@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import PageTitle from "../../components/layout/PageTitle";
 
 const pipeline = [
   {
@@ -62,6 +63,7 @@ const technologies = [
 export default function GECAI() {
   return (
     <main>
+      <PageTitle title="Grammatical Error Correction AI | Khushi Patel" />
       {/* HERO */}
       <section className="mx-auto max-w-6xl px-6 pb-20 pt-24 sm:pt-32">
         <Link

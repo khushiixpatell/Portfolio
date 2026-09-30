@@ -15,10 +15,15 @@ dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+const CLIENT_URL =
+  process.env.CLIENT_URL || "http://localhost:5173";
 
 app.use(
   cors({
     origin: process.env.CLIENT_URL || "http://localhost:5173",
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+
   })
 );
 
@@ -47,6 +52,18 @@ app.use((req, res) => {
   });
 });
 
+app.use((err, req, res, next) => {
+  console.error("UNHANDLED ERROR:", err);
+
+  res.status(err.status || 500).json({
+    success: false,
+    message:
+      process.env.NODE_ENV === "production"
+        ? "Internal server error."
+        : err.message || "Internal server error.",
+  });
+});
+
 app.listen(PORT, () => {
-  console.log(`Portfolio API running on http://localhost:${PORT}`);
+console.log(`Portfolio API running on port ${PORT}`);
 });

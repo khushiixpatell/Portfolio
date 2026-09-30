@@ -15,14 +15,14 @@ export default function Hero() {
             I build software across
             <span className="text-zinc-200"> full-stack</span>,
             <span className="text-zinc-200"> AI</span>, and
-            <span className="text-zinc-200"> product</span>.
+            <span className="text-zinc-200"> frontend</span>.
           </span>
         </h1>
 
         <p className="mt-8 max-w-2xl text-lg leading-8 text-zinc-400">
           Computer Science student at Wilfrid Laurier University building
-          user-focused applications, intelligent systems, and software that
-          solves real problems.
+          full-stack applications, intelligent systems with a focus on practical,
+          real-world solutions. 
         </p>
 
         <div className="mt-10 flex flex-wrap items-center gap-4">

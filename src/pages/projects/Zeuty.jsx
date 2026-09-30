@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import PageTitle from "../../components/layout/PageTitle";
 
 const technologies = [
   "Frontend Development",
@@ -31,6 +32,7 @@ const principles = [
 export default function Zeuty() {
   return (
     <main>
+      <PageTitle title="Zeuty | Khushi Patel" />
       {/* HERO */}
       <section className="mx-auto max-w-6xl px-6 pb-20 pt-24 sm:pt-32">
         <Link
