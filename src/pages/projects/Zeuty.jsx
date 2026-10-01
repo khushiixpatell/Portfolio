@@ -1,6 +1,10 @@
 import { Link } from "react-router-dom";
 import PageTitle from "../../components/layout/PageTitle";
 
+import z1 from "../../assets/zeuty-ui-1.png";
+import z2 from "../../assets/zeuty-ui-2.png";
+import z3 from "../../assets/zeuty-ui-3.png";
+
 const technologies = [
   "Frontend Development",
   "UI/UX",
@@ -177,15 +181,12 @@ export default function Zeuty() {
 
           {/* MAIN SCREENSHOT */}
           <div className="mt-14">
-            <div className="flex aspect-[16/9] items-center justify-center overflow-hidden rounded-3xl border border-dashed border-white/15 bg-zinc-950">
-              <div className="text-center">
-                <p className="text-sm text-zinc-500">
-                  Main Zeuty interface screenshot
-                </p>
-                <p className="mt-2 text-xs text-zinc-700">
-                  Replace with your strongest design
-                </p>
-              </div>
+            <div className="overflow-hidden rounded-3xl border border-white/10 bg-zinc-950">
+              <img
+                src={z1}
+                alt="Zeuty product interface"
+                className="mx-auto block h-auto w-[70%]"
+              />
             </div>
 
             <div className="mt-5 flex flex-col gap-2 sm:flex-row sm:justify-between">
@@ -202,10 +203,12 @@ export default function Zeuty() {
           {/* SECONDARY SCREENSHOTS */}
           <div className="mt-14 grid gap-5 md:grid-cols-2">
             <div>
-              <div className="flex aspect-[4/3] items-center justify-center overflow-hidden rounded-3xl border border-dashed border-white/15 bg-zinc-950">
-                <p className="text-sm text-zinc-600">
-                  Zeuty screen 02
-                </p>
+              <div className="overflow-hidden rounded-3xl border border-white/10 bg-zinc-950">
+                <img
+                  src={z2}
+                  alt="Zeuty interface exploration"
+                  className="mx-auto block h-auto w-[90%]"
+                />
               </div>
 
               <p className="mt-4 text-sm text-zinc-400">
@@ -214,23 +217,16 @@ export default function Zeuty() {
             </div>
 
             <div>
-              <div className="flex aspect-[4/3] items-center justify-center overflow-hidden rounded-3xl border border-dashed border-white/15 bg-zinc-950">
-                <p className="text-sm text-zinc-600">
-                  Zeuty screen 03
-                </p>
+              <div className="overflow-hidden rounded-3xl border border-white/10 bg-zinc-950">
+                <img
+                  src={z3}
+                  alt="Zeuty product flow"
+                  className="mx-auto block h-auto w-[80%]"
+                />
               </div>
 
               <p className="mt-4 text-sm text-zinc-400">
                 Product flow
-              </p>
-            </div>
-          </div>
-
-          {/* FULL WIDTH FOURTH */}
-          <div className="mt-14">
-            <div className="flex aspect-[16/8] items-center justify-center overflow-hidden rounded-3xl border border-dashed border-white/15 bg-zinc-950">
-              <p className="text-sm text-zinc-600">
-                Zeuty screen 04
               </p>
             </div>
           </div>

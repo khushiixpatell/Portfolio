@@ -1,5 +1,15 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import PageTitle from "../../components/layout/PageTitle";
+
+import gdgUi1 from "../../assets/gdg-ui-1.png";
+import gdgUi2 from "../../assets/gdg-ui-2.png";
+import gdgUi3 from "../../assets/gdg-ui-3.png";
+import gdgUi4 from "../../assets/gdg-ui-4.png";
+import gdgUi5 from "../../assets/gdg-ui-5.png";
+import gdgUi6 from "../../assets/gdg-ui-6.png";
+import gdgUi7 from "../../assets/gdg-ui-7.png";
+
 
 const features = [
   {
@@ -37,7 +47,18 @@ const technologies = [
   "Gemini API",
 ];
 
+const screenshots = [
+  gdgUi1,
+  gdgUi2,
+  gdgUi3,
+  gdgUi4,
+  gdgUi5,
+  gdgUi6,
+  gdgUi7,
+];
+
 export default function GDGCommandHub() {
+  const [currentScreenshot, setCurrentScreenshot] = useState(0);
   return (
     <main>
       <PageTitle title="GDG Command Hub | Khushi Patel" />
@@ -329,46 +350,79 @@ export default function GDGCommandHub() {
         </div>
       </section>
 
-      {/* SCREENSHOTS PLACEHOLDER */}
-      <section className="mx-auto max-w-6xl px-6 py-24">
-        <div>
-          <p className="text-sm font-medium uppercase tracking-[0.2em] text-sky-400">
-            Product
-          </p>
+      <section className="border-y border-white/10 bg-white/[0.015]">
+        <div className="mx-auto max-w-6xl px-6 py-24">
+          <div className="max-w-3xl">
+            <p className="text-sm font-medium uppercase tracking-[0.2em] text-sky-400">
+              Product
+            </p>
 
-          <h2 className="mt-4 text-3xl font-bold tracking-tight text-white sm:text-4xl">
-            Inside Command Hub.
-          </h2>
+            <h2 className="mt-4 text-3xl font-bold tracking-tight text-white sm:text-4xl">
+              Command Hub in action.
+            </h2>
 
-          <p className="mt-4 max-w-2xl leading-7 text-zinc-400">
-            A centralized interface designed around the workflows involved
-            in managing GDG Laurier.
-          </p>
-        </div>
-
-        <div className="mt-12 grid gap-5 md:grid-cols-2">
-          <div className="flex aspect-video items-center justify-center rounded-3xl border border-dashed border-white/15 bg-white/[0.02]">
-            <p className="text-sm text-zinc-600">
-              Dashboard screenshot
+            <p className="mt-5 leading-7 text-zinc-400">
+              A look at the tools built for event planning, team coordination,
+              budgeting, content creation, and AI-assisted workflows.
             </p>
           </div>
 
-          <div className="flex aspect-video items-center justify-center rounded-3xl border border-dashed border-white/15 bg-white/[0.02]">
-            <p className="text-sm text-zinc-600">
-              Event management screenshot
-            </p>
-          </div>
+          <div className="mt-12">
+            <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-zinc-950">
+              <img
+                src={screenshots[currentScreenshot]}
+                alt={`GDG Command Hub screenshot ${currentScreenshot + 1}`}
+                className="mx-auto block h-auto w-[92%] object-contain"
+              />
 
-          <div className="flex aspect-video items-center justify-center rounded-3xl border border-dashed border-white/15 bg-white/[0.02]">
-            <p className="text-sm text-zinc-600">
-              AI workflow screenshot
-            </p>
-          </div>
+              <button
+                type="button"
+                onClick={() =>
+                  setCurrentScreenshot((current) =>
+                    current === 0 ? screenshots.length - 1 : current - 1
+                  )
+                }
+                aria-label="Previous screenshot"
+                className="absolute left-4 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-white/10 bg-zinc-950/80 text-lg text-zinc-300 backdrop-blur transition hover:bg-zinc-800 hover:text-white"
+              >
+                ←
+              </button>
 
-          <div className="flex aspect-video items-center justify-center rounded-3xl border border-dashed border-white/15 bg-white/[0.02]">
-            <p className="text-sm text-zinc-600">
-              Team workspace screenshot
-            </p>
+              <button
+                type="button"
+                onClick={() =>
+                  setCurrentScreenshot((current) =>
+                    current === screenshots.length - 1 ? 0 : current + 1
+                  )
+                }
+                aria-label="Next screenshot"
+                className="absolute right-4 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-white/10 bg-zinc-950/80 text-lg text-zinc-300 backdrop-blur transition hover:bg-zinc-800 hover:text-white"
+              >
+                →
+              </button>
+            </div>
+
+            <div className="mt-5 flex items-center justify-center gap-5">
+              <span className="text-sm text-zinc-500">
+                {currentScreenshot + 1} / {screenshots.length}
+              </span>
+
+              <div className="flex gap-2">
+                {screenshots.map((_, index) => (
+                  <button
+                    key={index}
+                    type="button"
+                    onClick={() => setCurrentScreenshot(index)}
+                    aria-label={`View screenshot ${index + 1}`}
+                    className={`h-1.5 rounded-full transition-all ${
+                      index === currentScreenshot
+                        ? "w-6 bg-zinc-300"
+                        : "w-1.5 bg-zinc-700 hover:bg-zinc-500"
+                    }`}
+                  />
+                ))}
+              </div>
+            </div>
           </div>
         </div>
       </section>

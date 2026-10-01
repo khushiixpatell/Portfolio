@@ -558,52 +558,166 @@ export default function GECAI() {
         </div>
       </section>
 
-      {/* RESULTS PLACEHOLDER */}
-      <section className="mx-auto max-w-6xl px-6 py-24">
+      {/* RESULTS */}
+<section className="mx-auto max-w-6xl px-6 py-24">
+  <div className="max-w-3xl">
+    <p className="text-sm font-medium uppercase tracking-[0.2em] text-sky-400">
+      Results
+    </p>
+
+    <h2 className="mt-4 text-3xl font-bold tracking-tight text-white sm:text-4xl">
+      Comparing model behavior.
+    </h2>
+
+    <p className="mt-5 leading-7 text-zinc-400">
+      The systems were evaluated on the same held-out test set using
+      GLEU and exact-match accuracy, alongside runtime and qualitative
+      inspection of model outputs.
+    </p>
+  </div>
+
+  {/* QUANTITATIVE RESULTS */}
+  <div className="mt-12 overflow-hidden rounded-3xl border border-white/10">
+    <div className="grid grid-cols-[1.5fr_1fr_1fr_1.3fr] border-b border-white/10 bg-white/[0.03] px-6 py-4 text-xs uppercase tracking-[0.14em] text-zinc-600">
+      <span>Model</span>
+      <span>GLEU</span>
+      <span>Exact Match</span>
+      <span>Notes</span>
+    </div>
+
+    {[
+      [
+        "LSTM + Attention",
+        "0.4014",
+        "0.20%",
+        "243.42s CPU",
+      ],
+      [
+        "LSTM — No Attention",
+        "N/A",
+        "N/A",
+        "Ablation did not complete",
+      ],
+      [
+        "Gemini Zero-Shot",
+        "Pending",
+        "Pending",
+        "Temperature 0.0",
+      ],
+      [
+        "Gemini Few-Shot",
+        "Pending",
+        "Pending",
+        "Four-example prompt",
+      ],
+    ].map(([model, gleu, exactMatch, notes]) => (
+      <div
+        key={model}
+        className="grid grid-cols-[1.5fr_1fr_1fr_1.3fr] border-b border-white/10 px-6 py-5 text-sm last:border-b-0"
+      >
+        <span className="text-zinc-300">{model}</span>
+        <span className="text-zinc-300">{gleu}</span>
+        <span className="text-zinc-300">{exactMatch}</span>
+        <span className="text-zinc-500">{notes}</span>
+      </div>
+    ))}
+  </div>
+
+  <p className="mt-4 text-xs leading-5 text-zinc-600">
+    Results reflect the completed evaluation reported in the project.
+    Gemini evaluation values were still pending in the final report.
+  </p>
+
+      {/* QUALITATIVE RESULTS */}
+      <div className="mt-20 border-t border-white/10 pt-14">
         <div className="max-w-3xl">
-          <p className="text-sm font-medium uppercase tracking-[0.2em] text-sky-400">
-            Results
+          <p className="text-xs uppercase tracking-[0.18em] text-zinc-600">
+            Qualitative Evaluation
           </p>
 
-          <h2 className="mt-4 text-3xl font-bold tracking-tight text-white sm:text-4xl">
-            Comparing model behavior.
-          </h2>
+          <h3 className="mt-4 text-2xl font-semibold text-white sm:text-3xl">
+            Looking beyond aggregate scores.
+          </h3>
 
           <p className="mt-5 leading-7 text-zinc-400">
-            The final comparison examines model quality alongside runtime,
-            compute, cost, and qualitative failure modes.
+            Individual examples revealed differences that are not fully
+            captured by automatic metrics. We inspected whether each system
+            preserved the intended meaning while correcting grammatical
+            errors.
           </p>
         </div>
 
-        <div className="mt-12 overflow-hidden rounded-3xl border border-white/10">
-          <div className="grid grid-cols-[1.5fr_1fr_1fr] border-b border-white/10 bg-white/[0.03] px-6 py-4 text-xs uppercase tracking-[0.14em] text-zinc-600">
-            <span>Model</span>
-            <span>GLEU</span>
-            <span>Exact Match</span>
-          </div>
+        <div className="mt-10 grid gap-5 md:grid-cols-2">
+          <article className="rounded-3xl border border-white/10 bg-white/[0.025] p-7">
+            <p className="text-xs uppercase tracking-[0.16em] text-zinc-600">
+              Example 01
+            </p>
 
-          {[
-            "LSTM + Attention",
-            "LSTM — No Attention",
-            "Gemini Zero-Shot",
-            "Gemini Few-Shot",
-          ].map((model) => (
-            <div
-              key={model}
-              className="grid grid-cols-[1.5fr_1fr_1fr] border-b border-white/10 px-6 py-5 text-sm last:border-b-0"
-            >
-              <span className="text-zinc-300">{model}</span>
-              <span className="text-zinc-600">Add result</span>
-              <span className="text-zinc-600">Add result</span>
+            <p className="mt-5 text-sm text-zinc-500">
+              Incorrect
+            </p>
+
+            <p className="mt-2 text-zinc-300">
+              I have celebrated a birthday .... the big 21!
+            </p>
+
+            <div className="mt-6 grid gap-5 sm:grid-cols-2">
+              <div>
+                <p className="text-xs uppercase tracking-[0.14em] text-zinc-600">
+                  LSTM
+                </p>
+                <p className="mt-2 text-sm leading-6 text-zinc-400">
+                  I have a a birthday birthday ....
+                </p>
+              </div>
+
+              <div>
+                <p className="text-xs uppercase tracking-[0.14em] text-sky-400">
+                  Gemini
+                </p>
+                <p className="mt-2 text-sm leading-6 text-zinc-300">
+                  Celebrating a birthday .... the big 21!
+                </p>
+              </div>
             </div>
-          ))}
-        </div>
+          </article>
 
-        <p className="mt-4 text-xs text-zinc-600">
-          Final experiment values will be added from the completed evaluation
-          outputs.
-        </p>
-      </section>
+          <article className="rounded-3xl border border-white/10 bg-white/[0.025] p-7">
+            <p className="text-xs uppercase tracking-[0.16em] text-zinc-600">
+              Example 02
+            </p>
+
+            <p className="mt-5 text-sm text-zinc-500">
+              Incorrect
+            </p>
+
+            <p className="mt-2 text-zinc-300">
+              ...substance requirements for our Clients
+            </p>
+
+            <div className="mt-6 grid gap-5 sm:grid-cols-2">
+              <div>
+                <p className="text-xs uppercase tracking-[0.14em] text-zinc-600">
+                  LSTM
+                </p>
+                <p className="mt-2 text-sm leading-6 text-zinc-400">
+                  ...appropriate guesses requirements for our..
+                </p>
+              </div>
+
+              <div>
+                <p className="text-xs uppercase tracking-[0.14em] text-sky-400">
+                  Gemini
+                </p>
+                <p className="mt-2 text-sm leading-6 text-zinc-300">
+                  ...substance requirements for our Clients.
+                </p>
+              </div>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
 
       {/* TAKEAWAY */}
       <section className="border-t border-white/10">

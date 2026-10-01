@@ -1,5 +1,14 @@
 import { Link } from "react-router-dom";
 import PageTitle from "../../components/layout/PageTitle";
+import { useState } from "react";
+
+import bite1 from "../../assets/bitewise-ui-1.png";
+import bite2 from "../../assets/bitewise-ui-2.png";
+import bite3 from "../../assets/bitewise-ui-3.png";
+import bite4 from "../../assets/bitewise-ui-4.png";
+import bite5 from "../../assets/bitewise-ui-5.png";
+import bite6 from "../../assets/bitewise-ui-6.png";
+import biteDemo from "../../assets/bitewise-demo.mp4";
 
 const technologies = [
   "React",
@@ -37,7 +46,17 @@ const features = [
   },
 ];
 
+const screenshots = [
+  bite1,
+  bite2,
+  bite3,
+  bite4,
+  bite5,
+  bite6,
+];
+
 export default function BiteWise() {
+  const [currentScreenshot, setCurrentScreenshot] = useState(0);
   return (
     <main>
       <PageTitle title="BiteWise | Khushi Patel" />
@@ -397,34 +416,104 @@ export default function BiteWise() {
       </section>
 
       {/* PRODUCT SCREENSHOTS */}
-      <section className="border-y border-white/10 bg-white/[0.015]">
-        <div className="mx-auto max-w-6xl px-6 py-24">
-          <div className="max-w-3xl">
-            <p className="text-sm font-medium uppercase tracking-[0.2em] text-sky-400">
-              Product
-            </p>
+<section className="border-y border-white/10 bg-white/[0.015]">
+  <div className="mx-auto max-w-6xl px-6 py-24">
+    <div className="max-w-3xl">
+      <p className="text-sm font-medium uppercase tracking-[0.2em] text-sky-400">
+        Product
+      </p>
 
-            <h2 className="mt-4 text-3xl font-bold tracking-tight text-white sm:text-4xl">
-              The BiteWise experience.
-            </h2>
+      <h2 className="mt-4 text-3xl font-bold tracking-tight text-white sm:text-4xl">
+        The BiteWise experience.
+      </h2>
 
-            <p className="mt-5 leading-7 text-zinc-400">
-              The original application combined dietary setup, discovery,
-              and recipe information into one user experience.
-            </p>
-          </div>
+      <p className="mt-5 leading-7 text-zinc-400">
+        The original application combined dietary setup, discovery,
+        and recipe information into one user experience.
+      </p>
+    </div>
 
-          <div className="mt-12 grid gap-5 md:grid-cols-2">
-            <div className="flex aspect-video items-center justify-center rounded-3xl border border-dashed border-white/15 bg-zinc-950">
-              <p className="text-sm text-zinc-600">
-                BiteWise screenshot
-              </p>
+    {/* DEMO VIDEO */}
+    <div className="mt-12">
+      <div className="overflow-hidden rounded-3xl border border-white/10 bg-zinc-950">
+        <video
+          src={biteDemo}
+          controls
+          playsInline
+          className="mx-auto block max-h-[650px] w-full object-contain"
+        />
+      </div>
+
+      <p className="mt-4 text-sm text-zinc-500">
+        BiteWise application demo
+      </p>
+    </div>
+
+    {/* SCREENSHOT CAROUSEL */}
+          <div className="mt-16">
+            <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-zinc-950">
+              <img
+                src={screenshots[currentScreenshot]}
+                alt={`BiteWise application screenshot ${
+                  currentScreenshot + 1
+                }`}
+                className="mx-auto block h-auto max-h-[700px] w-[85%] object-contain"
+              />
+
+              {/* Previous */}
+              <button
+                type="button"
+                onClick={() =>
+                  setCurrentScreenshot((current) =>
+                    current === 0
+                      ? screenshots.length - 1
+                      : current - 1
+                  )
+                }
+                aria-label="Previous screenshot"
+                className="absolute left-4 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-white/10 bg-zinc-950/80 text-lg text-zinc-300 backdrop-blur transition hover:bg-zinc-800 hover:text-white"
+              >
+                ←
+              </button>
+
+              {/* Next */}
+              <button
+                type="button"
+                onClick={() =>
+                  setCurrentScreenshot((current) =>
+                    current === screenshots.length - 1
+                      ? 0
+                      : current + 1
+                  )
+                }
+                aria-label="Next screenshot"
+                className="absolute right-4 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-white/10 bg-zinc-950/80 text-lg text-zinc-300 backdrop-blur transition hover:bg-zinc-800 hover:text-white"
+              >
+                →
+              </button>
             </div>
 
-            <div className="flex aspect-video items-center justify-center rounded-3xl border border-dashed border-white/15 bg-zinc-950">
-              <p className="text-sm text-zinc-600">
-                Recipe discovery screenshot
+            {/* Carousel controls */}
+            <div className="mt-5 flex items-center justify-center gap-5">
+              <p className="text-sm text-zinc-500">
+                {currentScreenshot + 1} / {screenshots.length}
               </p>
+
+              <div className="flex gap-2">
+                {screenshots.map((_, index) => (
+                  <button
+                    key={index}
+                    type="button"
+                    onClick={() => setCurrentScreenshot(index)}
+                    aria-label={`View screenshot ${index + 1}`}
+                    className={`h-1.5 rounded-full transition-all ${
+                      index === currentScreenshot
+                        ? "w-6 bg-zinc-300"
+                        : "w-1.5 bg-zinc-700 hover:bg-zinc-500"
+                    }`}
+                  />
+                ))}
+              </div>
             </div>
           </div>
 
