@@ -98,19 +98,6 @@ model Skill {
   @@index([groupId, displayOrder])
 }
 
-model ContactMessage {
-  id      Int     @id @default(autoincrement())
-  name    String
-  email   String
-  subject String?
-  message String
-
-  read Boolean @default(false)
-
-  createdAt DateTime @default(now())
-
-  @@index([read, createdAt])
-}
 
 model Admin {
   id       Int    @id @default(autoincrement())
