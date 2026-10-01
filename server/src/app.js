@@ -18,9 +18,14 @@ const PORT = process.env.PORT || 5000;
 const CLIENT_URL =
   process.env.CLIENT_URL || "http://localhost:5173";
 
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://khushi-portfolio-psi.vercel.app",
+];
+
 app.use(
   cors({
-    origin: process.env.CLIENT_URL || "http://localhost:5173",
+    origin: allowedOrigins,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
 
