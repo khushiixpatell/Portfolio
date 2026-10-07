@@ -790,8 +790,26 @@ export default function ConnectFour() {
                             }`}
                           />
                         </div>
+                        
                       ))
                     )}
+                  </div>
+                  <div className="mt-5 flex flex-wrap items-center justify-center gap-6 text-xs">
+                    <div className="flex items-center gap-2">
+                      <span className="h-3 w-3 rounded-full bg-sky-400" />
+                      <span className="text-zinc-400">
+                        Agent A —{" "}
+                        <span className="text-zinc-200">{agentA}</span>
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <span className="h-3 w-3 rounded-full bg-zinc-300" />
+                      <span className="text-zinc-400">
+                        Agent B —{" "}
+                        <span className="text-zinc-200">{agentB}</span>
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -810,7 +828,12 @@ export default function ConnectFour() {
 
                     <div className="mt-8 grid gap-5 sm:grid-cols-3">
                       <div>
-                        <p className="text-3xl font-semibold text-white">
+                        <p className={`text-3xl font-semibold ${
+                          results.winsA > results.winsB
+                          ? "text-sky-400"
+                          : "text-white"
+                        }`}
+                     >
                           {results.winsA}
                         </p>
                         <p className="mt-1 text-xs uppercase tracking-[0.14em] text-zinc-600">
@@ -819,7 +842,12 @@ export default function ConnectFour() {
                       </div>
 
                       <div>
-                        <p className="text-3xl font-semibold text-white">
+                        <p className={`text-3xl font-semibold ${
+                            results.winsB > results.winsA
+                              ? "text-sky-400"
+                              : "text-white"
+                          }`}
+                        >
                           {results.winsB}
                         </p>
                         <p className="mt-1 text-xs uppercase tracking-[0.14em] text-zinc-600">
