@@ -1,5 +1,16 @@
 import { Link } from "react-router-dom";
+import { useState } from "react";
 import PageTitle from "../../components/layout/PageTitle";
+
+import {
+  createBoard,
+  applyMove,
+  isTerminal,
+  winner,
+  getAgentMove,
+  PLAYER1,
+  PLAYER2,
+} from "../../utils/connectFourAI";
 
 const agents = [
   {
@@ -58,6 +69,146 @@ const technologies = [
 ];
 
 export default function ConnectFour() {
+  const [agentA, setAgentA] = useState("Random");
+  const [agentB, setAgentB] = useState("Minimax");
+
+  const [games, setGames] = useState(30);
+  const [depth, setDepth] = useState(4);
+
+  const [running, setRunning] = useState(false);
+  const [currentGame, setCurrentGame] = useState(0);
+  const [board, setBoard] = useState(createBoard());
+
+  const [results, setResults] = useState(null);
+
+  async function runExperiment() {
+    if (running) return;
+
+    setRunning(true);
+    setResults(null);
+    setCurrentGame(0);
+    setBoard(createBoard());
+
+    let winsA = 0;
+    let winsB = 0;
+    let draws = 0;
+
+    let totalTimeA = 0;
+    let totalTimeB = 0;
+
+    const totalGames = Math.max(
+      1,
+      Math.min(Number(games), 100)
+    );
+
+    const minimaxDepth = Math.max(
+      1,
+      Math.min(Number(depth), 6)
+    );
+
+    for (let gameIndex = 0; gameIndex < totalGames; gameIndex++) {
+      let gameBoard = createBoard();
+
+      // Match the original experiment:
+      // alternate which agent moves first.
+      const aFirst = gameIndex % 2 === 0;
+
+      const player1Agent = aFirst ? agentA : agentB;
+      const player2Agent = aFirst ? agentB : agentA;
+
+      let currentPlayer = PLAYER1;
+
+      let timeA = 0;
+      let timeB = 0;
+
+      while (!isTerminal(gameBoard)) {
+        const currentAgent =
+          currentPlayer === PLAYER1
+            ? player1Agent
+            : player2Agent;
+
+        const start = performance.now();
+
+        const move = getAgentMove(
+          currentAgent,
+          gameBoard,
+          currentPlayer,
+          minimaxDepth
+        );
+
+        const elapsed =
+          performance.now() - start;
+
+        if (currentAgent === agentA) {
+          timeA += elapsed;
+        } else {
+          timeB += elapsed;
+        }
+
+        if (move === null || move === undefined) {
+          break;
+        }
+
+        gameBoard = applyMove(
+          gameBoard,
+          move,
+          currentPlayer
+        );
+
+        currentPlayer =
+          currentPlayer === PLAYER1
+            ? PLAYER2
+            : PLAYER1;
+
+        setBoard(gameBoard);
+
+        // Give the browser a chance to paint
+        // the board between moves.
+        await new Promise((resolve) =>
+          setTimeout(resolve, 45)
+        );
+      }
+
+      const gameWinner = winner(gameBoard);
+
+      if (gameWinner === null) {
+        draws++;
+      } else {
+        const winnerWasA =
+          (gameWinner === PLAYER1 && aFirst) ||
+          (gameWinner === PLAYER2 && !aFirst);
+
+        if (winnerWasA) {
+          winsA++;
+        } else {
+          winsB++;
+        }
+      }
+
+      totalTimeA += timeA;
+      totalTimeB += timeB;
+
+      setCurrentGame(gameIndex + 1);
+
+      await new Promise((resolve) =>
+        setTimeout(resolve, 120)
+      );
+    }
+
+    setResults({
+      winsA,
+      winsB,
+      draws,
+      winRateA: ((winsA / totalGames) * 100).toFixed(1),
+      winRateB: ((winsB / totalGames) * 100).toFixed(1),
+      avgTimeA: (totalTimeA / totalGames).toFixed(2),
+      avgTimeB: (totalTimeB / totalGames).toFixed(2),
+      totalGames,
+    });
+
+    setRunning(false);
+  }
+
   return (
     <main>
       <PageTitle title="Connect Four AI | Khushi Patel" />
@@ -499,35 +650,290 @@ export default function ConnectFour() {
         </div>
       </section>
 
-      {/* FUTURE INTERACTIVE EXTENSION */}
+      {/* INTERACTIVE EXPERIMENT */}
       <section className="border-y border-white/10 bg-white/[0.015]">
         <div className="mx-auto max-w-6xl px-6 py-24">
-          <div className="rounded-3xl border border-sky-400/20 bg-sky-400/[0.035] p-8 sm:p-10">
+          <div className="max-w-3xl">
             <p className="text-sm font-medium uppercase tracking-[0.2em] text-sky-400">
-              Individual Extension
+              Interactive AI Experiment
             </p>
 
-            <div className="mt-5 grid gap-10 lg:grid-cols-[1.2fr_0.8fr] lg:items-end">
-              <div>
-                <h2 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
-                  Next: make the experiment playable.
-                </h2>
+            <h2 className="mt-4 text-3xl font-bold tracking-tight text-white sm:text-4xl">
+              Re-run the experiment yourself.
+            </h2>
 
-                <p className="mt-5 max-w-2xl leading-7 text-zinc-400">
-                  I&apos;m extending the original project into an
-                  interactive portfolio experience where visitors can play
-                  against the agents, adjust Minimax search depth, and
-                  inspect how the AI evaluates possible moves.
-                </p>
+            <p className="mt-5 leading-7 text-zinc-400">
+              Choose two agents and watch them compete across repeated
+              Connect Four games. The experiment alternates which agent
+              moves first, just like the original evaluation.
+            </p>
+          </div>
+
+          {/* CONTROLS */}
+          <div className="mt-12 grid gap-5 rounded-3xl border border-white/10 bg-zinc-950/60 p-6 sm:grid-cols-2 lg:grid-cols-4">
+            <label className="block">
+              <span className="text-xs uppercase tracking-[0.16em] text-zinc-600">
+                Agent A
+              </span>
+
+              <select
+                value={agentA}
+                onChange={(event) => setAgentA(event.target.value)}
+                disabled={running}
+                className="mt-3 w-full rounded-xl border border-white/10 bg-zinc-900 px-4 py-3 text-sm text-zinc-200 outline-none transition focus:border-sky-400/40 disabled:opacity-50"
+              >
+                <option>Random</option>
+                <option>Rule-Based</option>
+                <option>Minimax</option>
+              </select>
+            </label>
+
+            <label className="block">
+              <span className="text-xs uppercase tracking-[0.16em] text-zinc-600">
+                Agent B
+              </span>
+
+              <select
+                value={agentB}
+                onChange={(event) => setAgentB(event.target.value)}
+                disabled={running}
+                className="mt-3 w-full rounded-xl border border-white/10 bg-zinc-900 px-4 py-3 text-sm text-zinc-200 outline-none transition focus:border-sky-400/40 disabled:opacity-50"
+              >
+                <option>Random</option>
+                <option>Rule-Based</option>
+                <option>Minimax</option>
+              </select>
+            </label>
+
+            <label className="block">
+              <span className="text-xs uppercase tracking-[0.16em] text-zinc-600">
+                Games
+              </span>
+
+              <input
+                type="number"
+                min="1"
+                max="100"
+                value={games}
+                onChange={(event) => setGames(event.target.value)}
+                disabled={running}
+                className="mt-3 w-full rounded-xl border border-white/10 bg-zinc-900 px-4 py-3 text-sm text-zinc-200 outline-none transition focus:border-sky-400/40 disabled:opacity-50"
+              />
+            </label>
+
+            <label className="block">
+              <span className="text-xs uppercase tracking-[0.16em] text-zinc-600">
+                Minimax Depth
+              </span>
+
+              <select
+                value={depth}
+                onChange={(event) => setDepth(Number(event.target.value))}
+                disabled={running}
+                className="mt-3 w-full rounded-xl border border-white/10 bg-zinc-900 px-4 py-3 text-sm text-zinc-200 outline-none transition focus:border-sky-400/40 disabled:opacity-50"
+              >
+                <option value={2}>2</option>
+                <option value={3}>3</option>
+                <option value={4}>4</option>
+                <option value={5}>5</option>
+                <option value={6}>6</option>
+              </select>
+            </label>
+          </div>
+
+          <div className="mt-5 flex flex-wrap items-center gap-4">
+            <button
+              type="button"
+              onClick={runExperiment}
+              disabled={running}
+              className="rounded-full bg-white px-6 py-3 text-sm font-medium text-zinc-950 transition hover:bg-zinc-200 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {running ? "Running experiment..." : "Run experiment"}
+            </button>
+
+            {running && (
+              <p className="text-sm text-zinc-500">
+                Game {currentGame} / {games}
+              </p>
+            )}
+          </div>
+
+          {/* LIVE BOARD */}
+          {(running || results) && (
+            <div className="mt-12 grid gap-10 lg:grid-cols-[0.9fr_1.1fr]">
+              <div>
+                <div className="rounded-3xl border border-white/10 bg-zinc-950 p-5 sm:p-7">
+                  <div className="mb-5 flex items-center justify-between">
+                    <p className="text-xs uppercase tracking-[0.16em] text-zinc-600">
+                      Live Match
+                    </p>
+
+                    <p className="text-xs text-zinc-600">
+                      {currentGame} / {games}
+                    </p>
+                  </div>
+
+                  <div className="grid grid-cols-7 gap-1.5 rounded-2xl bg-zinc-900 p-2 sm:gap-2 sm:p-3">
+                    {board.flatMap((row, rowIndex) =>
+                      row.map((cell, colIndex) => (
+                        <div
+                          key={`${rowIndex}-${colIndex}`}
+                          className="flex aspect-square items-center justify-center rounded-full bg-zinc-800"
+                        >
+                          <div
+                            className={`h-[72%] w-[72%] rounded-full transition ${
+                              cell === PLAYER1
+                                ? "bg-sky-400"
+                                : cell === PLAYER2
+                                  ? "bg-zinc-300"
+                                  : "bg-zinc-950"
+                            }`}
+                          />
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
               </div>
 
-              <div className="lg:text-right">
-                <span className="inline-flex rounded-full border border-sky-400/20 px-4 py-2 text-sm text-sky-300">
-                  Interactive version planned
-                </span>
+              {/* RESULTS */}
+              <div>
+                {results ? (
+                  <div className="rounded-3xl border border-white/10 bg-white/[0.025] p-7 sm:p-9">
+                    <p className="text-xs uppercase tracking-[0.16em] text-sky-400">
+                      Experiment Complete
+                    </p>
+
+                    <h3 className="mt-3 text-2xl font-semibold text-white">
+                      {agentA} vs {agentB}
+                    </h3>
+
+                    <div className="mt-8 grid gap-5 sm:grid-cols-3">
+                      <div>
+                        <p className="text-3xl font-semibold text-white">
+                          {results.winsA}
+                        </p>
+                        <p className="mt-1 text-xs uppercase tracking-[0.14em] text-zinc-600">
+                          {agentA} wins
+                        </p>
+                      </div>
+
+                      <div>
+                        <p className="text-3xl font-semibold text-white">
+                          {results.winsB}
+                        </p>
+                        <p className="mt-1 text-xs uppercase tracking-[0.14em] text-zinc-600">
+                          {agentB} wins
+                        </p>
+                      </div>
+
+                      <div>
+                        <p className="text-3xl font-semibold text-white">
+                          {results.draws}
+                        </p>
+                        <p className="mt-1 text-xs uppercase tracking-[0.14em] text-zinc-600">
+                          Draws
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="mt-10 space-y-5">
+                      <div>
+                        <div className="flex justify-between text-xs">
+                          <span className="text-zinc-600">
+                            {agentA} win rate
+                          </span>
+
+                          <span className="text-zinc-300">
+                            {results.winRateA}%
+                          </span>
+                        </div>
+
+                        <div className="mt-2 h-2 overflow-hidden rounded-full bg-white/5">
+                          <div
+                            className="h-full rounded-full bg-sky-400"
+                            style={{
+                              width: `${results.winRateA}%`,
+                            }}
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <div className="flex justify-between text-xs">
+                          <span className="text-zinc-600">
+                            {agentB} win rate
+                          </span>
+
+                          <span className="text-zinc-300">
+                            {results.winRateB}%
+                          </span>
+                        </div>
+
+                        <div className="mt-2 h-2 overflow-hidden rounded-full bg-white/5">
+                          <div
+                            className="h-full rounded-full bg-zinc-400"
+                            style={{
+                              width: `${results.winRateB}%`,
+                            }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="mt-10 grid gap-5 border-t border-white/10 pt-7 sm:grid-cols-2">
+                      <div>
+                        <p className="text-xs uppercase tracking-[0.14em] text-zinc-600">
+                          Avg decision time
+                        </p>
+
+                        <p className="mt-2 text-sm text-zinc-300">
+                          {agentA}: {results.avgTimeA} ms/game
+                        </p>
+
+                        <p className="mt-1 text-sm text-zinc-500">
+                          {agentB}: {results.avgTimeB} ms/game
+                        </p>
+                      </div>
+
+                      <div>
+                        <p className="text-xs uppercase tracking-[0.14em] text-zinc-600">
+                          Experiment
+                        </p>
+
+                        <p className="mt-2 text-sm text-zinc-300">
+                          {results.totalGames} games
+                        </p>
+
+                        <p className="mt-1 text-sm text-zinc-500">
+                          First player alternated
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex h-full min-h-[300px] items-center justify-center rounded-3xl border border-white/10 bg-white/[0.025] p-8 text-center">
+                    <div>
+                      <p className="text-xs uppercase tracking-[0.16em] text-zinc-600">
+                        Waiting
+                      </p>
+
+                      <p className="mt-3 text-lg text-zinc-400">
+                        Run the experiment to see the agents compete.
+                      </p>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
-          </div>
+          )}
+
+          <p className="mt-6 max-w-3xl text-xs leading-5 text-zinc-600">
+            This interactive reproduction runs the same three agent strategies
+            described in the original project. Its results are newly generated
+            in the browser and are separate from the original 30-game results
+            shown above.
+          </p>
         </div>
       </section>
 
